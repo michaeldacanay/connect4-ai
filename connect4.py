@@ -77,7 +77,7 @@ def main():
         while dropPiece('X', col) == False:
             col = getColumn()
 
-        if ALG == 'MINIMAX':
+        if ALG == 'MM':
             minimax()
         elif ALG == 'AB':
             alphabeta()
