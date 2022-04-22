@@ -50,8 +50,8 @@ def getChildren(board, piece):
 gameover = False
 
 
-def minimax(board, depth, Player, evaluationFunction):
-    # Player can be 'X' or 'O'
+def minimax(board, depth, player, evaluationFunction):
+    # player can be 'X' or 'O'
     # evaluationFunction is a function
 
     # base case
@@ -59,10 +59,10 @@ def minimax(board, depth, Player, evaluationFunction):
         eval = evaluationFunction(board)
         return board, eval
 
-    if Player == 'X':
+    if player == 'X':
         maxEval = math.float('-inf')
 
-        children = getChildren(board, Player)
+        children = getChildren(board, player)
         for child in children:
             newBoard, eval = minimax(child, depth - 1, 'O')
             # maxEval = max(maxEval, eval)
@@ -74,7 +74,7 @@ def minimax(board, depth, Player, evaluationFunction):
     else:
         minEval = math.float('inf')
 
-        children = getChildren(board, Player)
+        children = getChildren(board, player)
         for child in children:
             newBoard, eval = minimax(child, depth - 1, 'X')
             # minEval = min(minEval, eval)
@@ -84,10 +84,37 @@ def minimax(board, depth, Player, evaluationFunction):
             return board, minEval
 
 
-def alphabeta():
+def alphabeta(board, depth, player, evaluationFunction):
     # board, 4, 'X'
     # output: board
-    pass
+    # base case
+    if depth == 0 or gameover == True:
+        eval = evaluationFunction(board)
+        return board, eval
+
+    if player == 'X':
+        maxEval = math.float('-inf')
+
+        children = getChildren(board, player)
+        for child in children:
+            newBoard, eval = minimax(child, depth - 1, 'O')
+            # maxEval = max(maxEval, eval)
+            if eval > maxEval:
+                maxEval = eval
+                board = newBoard
+            return board, maxEval
+
+    else:
+        minEval = math.float('inf')
+
+        children = getChildren(board, player)
+        for child in children:
+            newBoard, eval = minimax(child, depth - 1, 'X')
+            # minEval = min(minEval, eval)
+            if eval < minEval:
+                minEval = eval
+                board = newBoard
+            return board, minEval
 
 
 def getColumn():
@@ -145,23 +172,8 @@ def main():
     ALG1 = ALGS[ALG1]
     ALG2 = ALGS[ALG2]
 
+    # the game is played until a side wins or there is a draw
     compete(ALG1, D1, ALG2, D2)
-
-    # the game is played until a side wins
-    while True:
-        printBoard(board)
-        col = getColumn()
-
-        # Player
-        while dropPiece('X', col) == False:
-            col = getColumn()
-
-        compete(ALG1, D1, ALG2, D2)
-        if ALG1 == 'MM':
-
-            minimax()
-        elif ALG2 == 'AB':
-            alphabeta()
 
 
 if __name__ == "__main__":
