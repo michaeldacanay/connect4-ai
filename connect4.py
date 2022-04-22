@@ -133,6 +133,20 @@ def main():
     # Board with 6 rows and 7 columns
     board = [['-' for _ in range(C)] for _ in range(R)]
 
+    # dict
+    ALGS = {
+        'MM': minimax,
+        'AB': alphabeta
+    }
+    EVALS = {
+        'simple': simple,
+        'complicated': complicated
+    }
+    ALG1 = ALGS[ALG1]
+    ALG2 = ALGS[ALG2]
+
+    compete(ALG1, D1, ALG2, D2)
+
     # the game is played until a side wins
     while True:
         printBoard(board)
