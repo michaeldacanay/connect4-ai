@@ -45,26 +45,45 @@ def getChildren(board, piece):
     # get possible moves
     for c in range(C):
         boards.append(dropPiece(board, piece, c))
+    return boards
 
 
 gameover = False
+map = [[3,4,5,7,5,4,3],[4,6,8,10,8,6,4],[5,8,11,13,11,8,5],[5,8,11,13,11,8,5],[4,6,8,10,8,6,4],[3,4,5,7,5,4,3]]
+
+def hardcode(board):
+    
+    num = 0
+    for x in range(C):
+        for y in range(R):
+            if x == 'X':
+                num+=map[x,y]
+            elif y == 'O':
+                num -=map[x,y]
+    return num
 
 
 def minimax(board, depth, player, evaluationFunction):
+    
+    #printBoard(board)
     # player can be 'X' or 'O'
     # evaluationFunction is a function
 
     # base case
     if depth == 0 or gameover == True:
         eval = evaluationFunction(board)
+        print('eval here')
+        print(eval)
+        printBoard(board)
         return board, eval
 
     if player == 'X':
-        maxEval = math.float('-inf')
+        maxEval = -100000000
 
+        
         children = getChildren(board, player)
         for child in children:
-            newBoard, eval = minimax(child, depth - 1, 'O')
+            newBoard, eval = minimax(child, depth - 1, 'O', evaluationFunction)
             # maxEval = max(maxEval, eval)
             if eval > maxEval:
                 maxEval = eval
@@ -72,11 +91,11 @@ def minimax(board, depth, player, evaluationFunction):
             return board, maxEval
 
     else:
-        minEval = math.float('inf')
+        minEval = 100000000
 
         children = getChildren(board, player)
         for child in children:
-            newBoard, eval = minimax(child, depth - 1, 'X')
+            newBoard, eval = minimax(child, depth - 1, 'X', evaluationFunction)
             # minEval = min(minEval, eval)
             if eval < minEval:
                 minEval = eval
@@ -124,22 +143,17 @@ def getColumn():
     return c
 
 
-def compete(ALG1, D1, ALG2, D2):
+def compete(ALG1, D1, eval1, ALG2, D2, eval2):
     global gameover
     # create new board
 
     turn = 0
     while gameover == False:
         if turn % 2 == 0:
-            if ALG1 == 'MM':
-                minimax(board, D1, 'X', evaluationFunction)
-            elif ALG1 == 'AB':
-                alphabeta(board, D1, 'X', evaluationFunction)
+            ALG1(board, D1, 'X', eval1)
         else:
-            if ALG2 == 'MM':
-                minimax(board, D1, 'O', evaluationFunction)
-            elif ALG2 == 'AB':
-                alphabeta(board, D1, 'O', evaluationFunction)
+            ALG2(board, D2, 'O', eval2)
+            
 
 
 def main():
@@ -149,7 +163,7 @@ def main():
 
     try:
         # Input arguments from the command line
-        _, ALG1, D1, ALG2, D2 = sys.argv
+        _, ALG1, D1, EVAL1, ALG2, D2, EVAL2= sys.argv
 
         D1 = int(D1)
         D2 = int(D2)
@@ -166,14 +180,16 @@ def main():
         'AB': alphabeta
     }
     EVALS = {
-        'simple': simple,
-        'complicated': complicated
+        'hc': hardcode
     }
     ALG1 = ALGS[ALG1]
     ALG2 = ALGS[ALG2]
+    eval1 =EVALS[EVAL1]
+    eval2 = EVALS[EVAL2]
 
     # the game is played until a side wins or there is a draw
-    compete(ALG1, D1, ALG2, D2)
+    print('hello')
+    compete(ALG1, D1, eval1, ALG2, D2, eval2)
 
 
 if __name__ == "__main__":
