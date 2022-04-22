@@ -10,12 +10,13 @@ import sys
 
 global R
 global C
+R = 6
+C = 7
 global board
-
-# Print board
 
 
 def printBoard(board):
+    """Print board"""
     for i in range(R):
         for j in range(C):
             print(board[i][j], end=' ')
@@ -40,6 +41,8 @@ def minimax():
 
 
 def alphabeta():
+    # board, 4, 'X'
+    # output: board
     pass
 
 
@@ -57,15 +60,14 @@ def main():
 
     try:
         # Input arguments from the command line
-        _, ALG, R, C = sys.argv
-        R = int(R)
-        C = int(C)
+        _, ALG, D1, ALG2, D2 = sys.argv
+        D1 = int(D1)
+        D2 = int(D2)
     except:
-        print("format: python connect4.py <ALG> <R> <C>")
+        print("format: python connect4.py <ALG1> <DEPTH1> <ALG2> <DEPTH2>")
         return(False)
 
-    # Board with 4 rows and 7 columns
-    # board = [['-'] * C] * R
+    # Board with 6 rows and 7 columns
     board = [['-' for _ in range(C)] for _ in range(R)]
 
     # the game is played until a side wins
