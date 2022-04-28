@@ -30,6 +30,7 @@ def dropPiece(board, piece, col):
     """The piece drops to the lowest valid space in the given column. Returns new deepcopy of board."""
     b = copy.deepcopy(board)
     row = R - 1
+    #print(col, ' ', row)
     while row >= 0:
         if b[row][col] == '-':
             b[row][col] = piece
@@ -44,63 +45,77 @@ def getChildren(board, piece):
 
     # get possible moves
     for c in range(C):
-        boards.append(dropPiece(board, piece, c))
+        temp = dropPiece(board, piece, c)
+        if temp != False:
+            boards.append([dropPiece(board, piece, c),c])
+    print('len', len(boards))
     return boards
 
 
 gameover = False
 map = [[3,4,5,7,5,4,3],[4,6,8,10,8,6,4],[5,8,11,13,11,8,5],[5,8,11,13,11,8,5],[4,6,8,10,8,6,4],[3,4,5,7,5,4,3]]
 
+
 def hardcode(board):
     
     num = 0
-    for x in range(C):
-        for y in range(R):
-            if x == 'X':
-                num+=map[x,y]
-            elif y == 'O':
-                num -=map[x,y]
+    for x in range(C-1):
+        for y in range(R-1):
+            if board[x][y] == 'X':
+                num+=map[x][y]
+                #print(x,' ',y,' ',map[x][y])
+            elif board[x][y] == 'O':
+                num -=map[x][y]
+                #print(x,' ',y,' ',map[x][y])
+    #print('eval ',num)
+    #printBoard(board)
     return num
 
 
-def minimax(board, depth, player, evaluationFunction):
-    
+def minimax(tboard, depth, player, evaluationFunction, moves):
+    #print('depth ',depth)
+  
     #printBoard(board)
     # player can be 'X' or 'O'
     # evaluationFunction is a function
-
     # base case
     if depth == 0 or gameover == True:
-        eval = evaluationFunction(board)
-        print('eval here')
-        print(eval)
-        printBoard(board)
-        return board, eval
+        eval = evaluationFunction(tboard)
+        #print('eval here')
+        #print(eval)
+        #printBoard(board)
+        return tboard, eval, moves
 
-    if player == 'X':
+    elif player == 'X':
         maxEval = -100000000
 
         
-        children = getChildren(board, player)
+        children = getChildren(tboard, player)
+        
         for child in children:
-            newBoard, eval = minimax(child, depth - 1, 'O', evaluationFunction)
+            newBoard, eval, moves = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
             # maxEval = max(maxEval, eval)
             if eval > maxEval:
                 maxEval = eval
-                board = newBoard
-            return board, maxEval
+                tboard = newBoard
+                moves = child[1]
+        return tboard, maxEval, moves
 
     else:
         minEval = 100000000
 
         children = getChildren(board, player)
+        
         for child in children:
-            newBoard, eval = minimax(child, depth - 1, 'X', evaluationFunction)
+            
+            
+            newBoard, eval, cmoves = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
             # minEval = min(minEval, eval)
             if eval < minEval:
                 minEval = eval
-                board = newBoard
-            return board, minEval
+                tboard = newBoard
+                moves = child[1]
+        return tboard, minEval, moves
 
 
 def alphabeta(board, depth, player, evaluationFunction):
@@ -146,13 +161,26 @@ def getColumn():
 def compete(ALG1, D1, eval1, ALG2, D2, eval2):
     global gameover
     # create new board
-
+    global board
     turn = 0
+
     while gameover == False:
+        printBoard(board)
+        input()
         if turn % 2 == 0:
-            ALG1(board, D1, 'X', eval1)
+            tboard, eval, moves = ALG1(board, D1, 'X', eval1, -1)
+            print('-----------')
+            print('moves', moves)
+            #printBoard(tboard)
+            board = dropPiece(board, 'X', moves)
         else:
-            ALG2(board, D2, 'O', eval2)
+            tboard, eval, moves = ALG2(board, D2, 'O', eval2, -1)
+            print('-----------')
+            print('moves', moves)
+            #printBoard(tboard)
+
+            board = dropPiece(board, 'O', moves)
+        turn+=1
             
 
 
