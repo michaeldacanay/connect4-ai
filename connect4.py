@@ -34,20 +34,58 @@ def dropPiece(board, piece, col):
     while row >= 0:
         if b[row][col] == '-':
             b[row][col] = piece
-            return b
+            return b, row
         row -= 1
-    return False
+    return False, False
 
 
-def getChildren(board, piece):
+def getChildren(tboard, piece):
     """Gets the possible board states"""
     boards = []
 
     # get possible moves
     for c in range(C):
-        temp = dropPiece(board, piece, c)
-        if temp != False:
-            boards.append([dropPiece(board, piece, c),c])
+        board, row = dropPiece(tboard, piece, c)
+        if board != False:
+            
+            endGame = False
+            #horizontal checker
+            if c-3 > 0 and board[row][c-3] == piece and c-2>0 and board[row][c-2] == piece and c-1>0 and board[row][c-1] == piece:
+                endGame = True
+            elif c-2>0 and board[row][c-2] == piece and c-1>0 and board[row][c-1] == piece and c+1<C and board[row][c+1] == piece:
+                endGame = True
+            elif c-1>0 and board[row][c-1] == piece and c+1<C and board[row][c+1] == piece and c+2<C and board[row][c+2] == piece:
+                endGame = True
+            elif c+1<C and board[row][c+1] == piece and c+2<C and board[row][c+2] == piece and c+3<C and board[row][c+3] == piece:
+                endGame = True
+            
+            #vertical checker
+            if row <= 1 and not endGame:
+                if board[row+1][c] == piece and board[row+2][c] == piece and board[row+3][c] == piece:
+                    endGame = True
+            #diagonal left checker
+            if c-3 >= 0 and row-3 >= 0 and board[row-3][c-3] == piece and c-2>=0 and row-2 >= 0 and board[row-2][c-2] == piece and c-1>=0 and row-1 >= 0 and board[row-1][c-1] == piece:
+                endGame = True
+            if c-2>=0 and row-2 >= 0 and board[row-2][c-2] == piece and c-1>=0 and row-1 >= 0 and board[row-1][c-1] == piece and c+1 < C and row+1 < R and board[row+1][c+1] == piece:
+                endGame = True
+            if c-1>=0 and row-1 >= 0 and board[row-1][c-1] == piece and c+1 < C and row+1 < R and board[row+1][c+1] == piece and c+2 < C and row+2 < R and board[row+2][c+2] == piece:
+                endGame = True
+            if c+1 < C and row+1 < R and board[row+1][c+1] == piece and c+2 < C and row+2 < R and board[row+2][c+2] == piece and c+3 < C and row+3 < R and board[row+3][c+3] == piece:
+                endGame = True
+            
+            #diagonal right checker
+            if c-3 >= 0 and row+3 < R and board[row+3][c-3] == piece and c-2>=0 and row+2 < R and board[row+2][c-2] == piece and c-1>=0 and row+1 < R and board[row+1][c-1] == piece:
+                endGame = True
+            if c-2>=0 and row+2 < R and board[row+2][c-2] == piece and c-1>=0 and row+1 < R and board[row+1][c-1] == piece and c+1 < C and row-1>=0 and board[row-1][c+1] == piece:
+                endGame = True
+            if c-1>=0 and row+1 <R and board[row+1][c-1] == piece and c+1 < C and row-1 >=0 and board[row-1][c+1] == piece and c+2 < C and row-2>=0 and board[row-2][c+2] == piece:
+                endGame = True
+            if c+1 < C and row-1>=0 and board[row-1][c+1] == piece and c+2 < C and row-2 >=0 and board[row-2][c+2] == piece and c+3 < C and row-3 >=0 and board[row-3][c+3] == piece:
+                endGame = True
+
+            print('child:', row, c, endGame)
+            printBoard(board)
+            boards.append([board,c,endGame])
     print('len', len(boards))
     return boards
 
@@ -57,34 +95,50 @@ map = [[3,4,5,7,5,4,3],[4,6,8,10,8,6,4],[5,8,11,13,11,8,5],[5,8,11,13,11,8,5],[4
 
 
 def hardcode(board):
-    
+    global gameover
     num = 0
+    total = 0
     for x in range(C-1):
         for y in range(R-1):
             if board[x][y] == 'X':
                 num+=map[x][y]
+                total+=1
                 #print(x,' ',y,' ',map[x][y])
             elif board[x][y] == 'O':
                 num -=map[x][y]
+                total+=1
                 #print(x,' ',y,' ',map[x][y])
     #print('eval ',num)
     #printBoard(board)
+    if total == 42:
+        gameover = True
     return num
 
 
 def minimax(tboard, depth, player, evaluationFunction, moves):
     #print('depth ',depth)
-  
+    overallgameOver = False
     #printBoard(board)
     # player can be 'X' or 'O'
     # evaluationFunction is a function
     # base case
+    total = 0
+    num = 0
+    for x in range(C-1):
+        for y in range(R-1):
+            if board[x][y] == 'X':
+                num+=map[x][y]
+                total+=1
+                #print(x,' ',y,' ',map[x][y])
+            elif board[x][y] == 'O':
+                num -=map[x][y]
+                total+=1
     if depth == 0 or gameover == True:
         eval = evaluationFunction(tboard)
         #print('eval here')
         #print(eval)
         #printBoard(board)
-        return tboard, eval, moves
+        return tboard, eval, moves, False
 
     elif player == 'X':
         maxEval = -100000000
@@ -93,13 +147,20 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
         children = getChildren(tboard, player)
         
         for child in children:
-            newBoard, eval, moves = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
+            if child[2] == True:
+                return tboard, 10000000, child[1], child[2]
+            newBoard, eval, moves, gameOver = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
             # maxEval = max(maxEval, eval)
+            if gameOver:
+                maxEval = eval
+                tboard = newBoard
+                moves = child[1]
+                return tboard, maxEval, moves, child[2]
             if eval > maxEval:
                 maxEval = eval
                 tboard = newBoard
                 moves = child[1]
-        return tboard, maxEval, moves
+        return tboard, maxEval, moves, child[2]
 
     else:
         minEval = 100000000
@@ -107,15 +168,20 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
         children = getChildren(board, player)
         
         for child in children:
-            
-            
-            newBoard, eval, cmoves = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
+            if child[2] == True:
+                return tboard, -10000000, child[1], child[2]
+            newBoard, eval, moves, gameOver = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
             # minEval = min(minEval, eval)
+            if gameOver:
+                maxEval = eval
+                tboard = newBoard
+                moves = child[1]
+                return tboard, maxEval, moves, child[2]
             if eval < minEval:
                 minEval = eval
                 tboard = newBoard
                 moves = child[1]
-        return tboard, minEval, moves
+        return tboard, minEval, moves, child[2]
 
 
 def alphabeta(board, depth, player, evaluationFunction):
@@ -168,20 +234,21 @@ def compete(ALG1, D1, eval1, ALG2, D2, eval2):
         printBoard(board)
         input()
         if turn % 2 == 0:
-            tboard, eval, moves = ALG1(board, D1, 'X', eval1, -1)
+            tboard, eval, moves, gameover = ALG1(board, D1, 'X', eval1, -1)
             print('-----------')
             print('moves', moves)
             #printBoard(tboard)
-            board = dropPiece(board, 'X', moves)
+            board, temp = dropPiece(board, 'X', moves)
         else:
-            tboard, eval, moves = ALG2(board, D2, 'O', eval2, -1)
+            tboard, eval, moves, gameover = ALG2(board, D2, 'O', eval2, -1)
             print('-----------')
             print('moves', moves)
             #printBoard(tboard)
 
-            board = dropPiece(board, 'O', moves)
+            board, temp = dropPiece(board, 'O', moves)
         turn+=1
-            
+    print('-----------')
+    printBoard(board)
 
 
 def main():
