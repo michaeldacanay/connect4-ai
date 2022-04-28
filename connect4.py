@@ -84,6 +84,7 @@ def getChildren(tboard, piece):
                 endGame = True
 
             print('child:', row, c, endGame)
+            print('eval:', hardcode(board))
             printBoard(board)
             boards.append([board,c,endGame])
     print('len', len(boards))
@@ -91,6 +92,17 @@ def getChildren(tboard, piece):
 
 
 gameover = False
+
+def weightedvalue(board):
+    #x wants positive and O wants negative
+    for col in range(C-1):
+        for row in range(R-1):
+            if board[row][col] == 'X':
+                numConnected = 1
+                line = 1
+                
+
+
 map = [[3,4,5,7,5,4,3],[4,6,8,10,8,6,4],[5,8,11,13,11,8,5],[5,8,11,13,11,8,5],[4,6,8,10,8,6,4],[3,4,5,7,5,4,3]]
 
 
@@ -98,14 +110,14 @@ def hardcode(board):
     global gameover
     num = 0
     total = 0
-    for x in range(C-1):
-        for y in range(R-1):
-            if board[x][y] == 'X':
-                num+=map[x][y]
+    for col in range(C):
+        for row in range(R):
+            if board[row][col] == 'X':
+                num+=map[row][col]
                 total+=1
                 #print(x,' ',y,' ',map[x][y])
-            elif board[x][y] == 'O':
-                num -=map[x][y]
+            elif board[row][col] == 'O':
+                num -=map[row][col]
                 total+=1
                 #print(x,' ',y,' ',map[x][y])
     #print('eval ',num)
