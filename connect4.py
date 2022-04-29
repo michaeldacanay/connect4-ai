@@ -41,8 +41,8 @@ def dropPiece(board, piece, col):
 
 def getChildren(tboard, piece):
     """Gets the possible board states"""
-    boards = []
 
+    boards = []
     # get possible moves
     for c in range(C):
         board, row = dropPiece(tboard, piece, c)
