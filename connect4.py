@@ -85,7 +85,7 @@ def getChildren(tboard, piece):
                 endGame = True
 
             #print('child:', piece, row, c, endGame)
-            #print('eval:', weightedvalue(board))
+            #print('eval:', owneval(board))
             #printBoard(board)
             boards.append([board,c,endGame])
     #print('len', len(boards))
@@ -95,7 +95,7 @@ gameover = False
 def calcEvalAdd(connected):
     eval = 0
     if connected >= 4:
-        eval = 1000000
+        eval = 10000000
         return eval
     elif connected == 3:
         eval += 1000
@@ -250,9 +250,9 @@ def weightedvalue(board):
                 
 
 
+
+
 map = [[3,4,5,7,5,4,3],[4,6,8,10,8,6,4],[5,8,11,13,11,8,5],[5,8,11,13,11,8,5],[4,6,8,10,8,6,4],[3,4,5,7,5,4,3]]
-
-
 def hardcode(board):
     global gameover
     num = 0
@@ -273,7 +273,17 @@ def hardcode(board):
         gameover = True
     return num
 
-
+def owneval(board):
+    num = weightedvalue(board)
+    for col in range(C):
+        for row in range(R):
+            if board[row][col] == 'X':
+                num+=map[0][col]
+                
+                #print(x,' ',y,' ',map[x][y])
+            elif board[row][col] == 'O':
+                num -=map[0][col]
+    return num
 def minimax(tboard, depth, player, evaluationFunction, moves):
     #print(player)
     tboard = copy.deepcopy(tboard)
@@ -290,23 +300,23 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
     tmoves = 0
     if depth == 0 or gameover == True:
         eval = evaluationFunction(tboard)
-        print('eval here')
-        print(eval)
-        printBoard(tboard)
+        #print('eval here')
+        #print(eval)
+        #printBoard(tboard)
         return tboard, eval, moves, False
 
     
     elif player == 'X':
-        maxEval = -100000000
+        maxEval = -100000000000
 
         
         children = getChildren(tboard, player)
-        
+        l = 0
         for child in children:
             #print('minmax')
             #printBoard(child[0])
             if child[2] == True:
-                return child[0], 10000000, child[1], child[2]
+                return child[0], 1000000, child[1], child[2]
             newBoard, eval, tmoves, gameOver = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
             #print('childBoard')
             #printBoard(newBoard)
@@ -316,13 +326,14 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
                 maxEval = eval
                 tboard = newBoard
                 moves = child[1]
-                print('best X move:', moves)
+                #print('best X move:', moves)
             
-        print('best X move before returning:', moves)
-        return tboard, maxEval, moves, child[2]
+        #print('best X move before returning:', moves)
+       
+        return tboard, maxEval, moves, False
 
     elif player == 'O':
-        minEval = 100000000
+        minEval = 1000000000000
 
         children = getChildren(tboard, player)
         
@@ -333,7 +344,7 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
                 #print('eval here finish')
                 #print(-100000000)
                 #printBoard(tboard)
-                return child[0], -100000000, child[1], child[2]
+                return child[0], -1000000, child[1], child[2]
             newBoard, eval, tmoves, gameOver = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
             # minEval = min(minEval, eval)
             
@@ -341,10 +352,10 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
                 minEval = eval
                 tboard = newBoard
                 moves = child[1]
-                print('best O move:', moves)
+                #print('best O move:', moves)
             
-        print('best O move before returning:', moves)
-        return tboard, minEval, moves, child[2]
+        #print('best O move before returning:', moves)
+        return tboard, minEval, moves, False
 
 
 def alphabeta(board, depth, player, evaluationFunction):
@@ -385,7 +396,10 @@ def getColumn():
     while c < 0 or c >= C:
         c = int(input("Invalid column. Enter valid column: "))
     return c
-
+def player(tboard, depth, player, evaluationFunction, moves):
+    print('pick a column', player )
+    col = int(input())
+    return tboard, 0, col, False
 
 def compete(ALG1, D1, eval1, ALG2, D2, eval2):
     global gameover
@@ -401,7 +415,7 @@ def compete(ALG1, D1, eval1, ALG2, D2, eval2):
             tboard, eval, moves, gameover = ALG1(board, D1, 'X', eval1, -1)
             
             print('-----------\n----------')
-            print('moves', moves)
+            print('X moves', moves)
             #printBoard(tboard)
             #print(temp)
             if gameover:
@@ -410,7 +424,7 @@ def compete(ALG1, D1, eval1, ALG2, D2, eval2):
         else:
             tboard, eval, moves, gameover = ALG2(board, D2, 'O', eval2, -1)
             print('-----------\n----------')
-            print('moves', moves)
+            print('O moves', moves)
             #print(temp)
             #printBoard(tboard)
             if gameover:
@@ -442,11 +456,13 @@ def main():
     # dict
     ALGS = {
         'MM': minimax,
-        'AB': alphabeta
+        'AB': alphabeta,
+        'PL': player
     }
     EVALS = {
         'hc': hardcode,
-        'wv': weightedvalue
+        'wv': weightedvalue,
+        'oe': owneval
     }
     ALG1 = ALGS[ALG1]
     ALG2 = ALGS[ALG2]
