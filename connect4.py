@@ -136,15 +136,7 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
     # base case
     total = 0
     num = 0
-    for x in range(C-1):
-        for y in range(R-1):
-            if board[x][y] == 'X':
-                num+=map[x][y]
-                total+=1
-                #print(x,' ',y,' ',map[x][y])
-            elif board[x][y] == 'O':
-                num -=map[x][y]
-                total+=1
+    
     if depth == 0 or gameover == True:
         eval = evaluationFunction(tboard)
         #print('eval here')
