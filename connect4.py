@@ -42,9 +42,10 @@ def dropPiece(board, piece, col):
 def getChildren(tboard, piece):
     """Gets the possible board states"""
     boards = []
-
     # get possible moves
     for c in range(C):
+        #print('child:', c)
+        #printBoard(tboard)
         board, row = dropPiece(tboard, piece, c)
         if board != False:
             
@@ -83,11 +84,11 @@ def getChildren(tboard, piece):
             if c+1 < C and row-1>=0 and board[row-1][c+1] == piece and c+2 < C and row-2 >=0 and board[row-2][c+2] == piece and c+3 < C and row-3 >=0 and board[row-3][c+3] == piece:
                 endGame = True
 
-            #print('child:', row, c, endGame)
+            #print('child:', piece, row, c, endGame)
             #print('eval:', weightedvalue(board))
             #printBoard(board)
             boards.append([board,c,endGame])
-    print('len', len(boards))
+    #print('len', len(boards))
     return boards
 
 gameover = False
@@ -286,14 +287,15 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
     # base case
     total = 0
     num = 0
-    
+    tmoves = 0
     if depth == 0 or gameover == True:
         eval = evaluationFunction(tboard)
-        #print('eval here')
-        #print(eval)
-        #printBoard(board)
+        print('eval here')
+        print(eval)
+        printBoard(tboard)
         return tboard, eval, moves, False
 
+    
     elif player == 'X':
         maxEval = -100000000
 
@@ -301,46 +303,47 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
         children = getChildren(tboard, player)
         
         for child in children:
-            #print('child')
+            #print('minmax')
             #printBoard(child[0])
             if child[2] == True:
                 return child[0], 10000000, child[1], child[2]
-            newBoard, eval, moves, gameOver = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
+            newBoard, eval, tmoves, gameOver = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
             #print('childBoard')
             #printBoard(newBoard)
             # maxEval = max(maxEval, eval)
-            if gameOver:
-                maxEval = eval
-                tboard = newBoard
-                moves = child[1]
-                return tboard, maxEval, moves, child[2]
+            
             if eval > maxEval:
                 maxEval = eval
                 tboard = newBoard
                 moves = child[1]
+                print('best X move:', moves)
+            
+        print('best X move before returning:', moves)
         return tboard, maxEval, moves, child[2]
 
-    else:
+    elif player == 'O':
         minEval = 100000000
 
-        children = getChildren(board, player)
+        children = getChildren(tboard, player)
         
         for child in children:
             #print('child')
             #printBoard(child[0])
             if child[2] == True:
-                return child[0], -10000000, child[1], child[2]
-            newBoard, eval, moves, gameOver = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
+                #print('eval here finish')
+                #print(-100000000)
+                #printBoard(tboard)
+                return child[0], -100000000, child[1], child[2]
+            newBoard, eval, tmoves, gameOver = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
             # minEval = min(minEval, eval)
-            if gameOver:
-                maxEval = eval
-                tboard = newBoard
-                moves = child[1]
-                return tboard, maxEval, moves, child[2]
+            
             if eval < minEval:
                 minEval = eval
                 tboard = newBoard
                 moves = child[1]
+                print('best O move:', moves)
+            
+        print('best O move before returning:', moves)
         return tboard, minEval, moves, child[2]
 
 
@@ -393,19 +396,25 @@ def compete(ALG1, D1, eval1, ALG2, D2, eval2):
     while gameover == False:
         printBoard(board)
         input()
+        temp = 0
         if turn % 2 == 0:
             tboard, eval, moves, gameover = ALG1(board, D1, 'X', eval1, -1)
             
-            print('-----------')
+            print('-----------\n----------')
             print('moves', moves)
-            printBoard(tboard)
+            #printBoard(tboard)
+            #print(temp)
+            if gameover:
+                print ('X wins!')
             board, temp = dropPiece(board, 'X', moves)
         else:
             tboard, eval, moves, gameover = ALG2(board, D2, 'O', eval2, -1)
-            print('-----------')
+            print('-----------\n----------')
             print('moves', moves)
-            printBoard(tboard)
-
+            #print(temp)
+            #printBoard(tboard)
+            if gameover:
+                print ('O wins!')
             board, temp = dropPiece(board, 'O', moves)
         turn+=1
     print('-----------')
@@ -443,7 +452,7 @@ def main():
     ALG2 = ALGS[ALG2]
     eval1 =EVALS[EVAL1]
     eval2 = EVALS[EVAL2]
-
+ 
     # the game is played until a side wins or there is a draw
     print('hello')
     compete(ALG1, D1, eval1, ALG2, D2, eval2)
