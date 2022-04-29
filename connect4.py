@@ -83,23 +83,169 @@ def getChildren(tboard, piece):
             if c+1 < C and row-1>=0 and board[row-1][c+1] == piece and c+2 < C and row-2 >=0 and board[row-2][c+2] == piece and c+3 < C and row-3 >=0 and board[row-3][c+3] == piece:
                 endGame = True
 
-            print('child:', row, c, endGame)
-            print('eval:', hardcode(board))
-            printBoard(board)
+            #print('child:', row, c, endGame)
+            #print('eval:', weightedvalue(board))
+            #printBoard(board)
             boards.append([board,c,endGame])
     print('len', len(boards))
     return boards
 
-
 gameover = False
-
+def calcEvalAdd(connected):
+    eval = 0
+    if connected >= 4:
+        eval = 1000000
+        return eval
+    elif connected == 3:
+        eval += 1000
+    elif connected == 2:
+        eval += 10
+    else:
+        eval += 1
+    return eval
 def weightedvalue(board):
     #x wants positive and O wants negative
-    for col in range(C-1):
-        for row in range(R-1):
+    eval = 0
+    for col in range(C):
+        for row in range(R):
             if board[row][col] == 'X':
-                numConnected = 1
-                line = 1
+                piece = 'X'
+                
+                #horizontal check
+                counter = 1
+                connected = 1
+                left = True
+                right = True
+                while counter < 4:
+                    if left and col-counter >= 0 and board[row][col-counter] == piece:
+                        connected+=1
+                    else:
+                        left = False
+                    if right and col+counter < C and board[row][col+counter] == piece:
+                        connected+=1
+                    else:
+                        right = False
+                    counter+=1
+                eval+=calcEvalAdd(connected)
+                #vertical
+                counter = 1
+                connected = 1
+                up = True
+                down = True
+                while counter < 4:
+                    if up and row-counter >= 0 and board[row-counter][col] == piece:
+                        connected+=1
+                    else:
+                        up = False
+                    if down and row+counter < R and board[row+counter][col] == piece:
+                        connected+=1
+                    else:
+                        down = False
+                    counter+=1
+                eval+=calcEvalAdd(connected)
+                #diagonal left
+                counter = 1
+                connected = 1
+                leftup = True
+                rightdown = True
+                while counter < 4:
+                    if leftup and row-counter >= 0 and col-counter >= 0 and board[row-counter][col-counter] == piece:
+                        connected+=1
+                    else:
+                        leftup = False
+                    if rightdown and row+counter < R and col+counter < C and board[row+counter][col+counter] == piece:
+                        connected+=1
+                    else:
+                        rightdown = False
+                    counter+=1
+                eval+=calcEvalAdd(connected)
+                #diagonal right
+                counter = 1
+                connected = 1
+                rightup = True
+                leftdown = True
+                while counter < 4:
+                    if rightup and row-counter >= 0 and col+counter <C and board[row-counter][col+counter] == piece:
+                        connected+=1
+                    else:
+                        rightup = False
+                    if leftdown and row+counter < R and col-counter >=0 and board[row+counter][col-counter] == piece:
+                        connected+=1
+                    else:
+                        leftdown = False
+                    counter+=1
+                eval+=calcEvalAdd(connected)
+            elif board[row][col] == 'O':
+                piece = 'O'
+                
+                #horizontal check
+                counter = 1
+                connected = 1
+                left = True
+                right = True
+                while counter < 4:
+                    if left and col-counter >= 0 and board[row][col-counter] == piece:
+                        connected+=1
+                    else:
+                        left = False
+                    if right and col+counter < C and board[row][col+counter] == piece:
+                        #print('rights working')
+                        connected+=1
+                    else:
+                        right = False
+                    counter+=1
+                eval-=calcEvalAdd(connected)
+                #vertical
+                counter = 1
+                connected = 1
+                up = True
+                down = True
+                while counter < 4:
+                    if up and row-counter >= 0 and board[row-counter][col] == piece:
+                        connected+=1
+                    else:
+                        up = False
+                    if down and row+counter < R and board[row+counter][col] == piece:
+                        connected+=1
+                    else:
+                        down = False
+                    counter+=1
+                eval-=calcEvalAdd(connected)
+                #diagonal left
+                counter = 1
+                connected = 1
+                leftup = True
+                rightdown = True
+                while counter < 4:
+                    if leftup and row-counter >= 0 and col-counter >= 0 and board[row-counter][col-counter] == piece:
+                        connected+=1
+                    else:
+                        leftup = False
+                    if rightdown and row+counter < R and col+counter < C and board[row+counter][col+counter] == piece:
+                        connected+=1
+                    else:
+                        rightdown = False
+                    counter+=1
+                eval-=calcEvalAdd(connected)
+                #diagonal right
+                counter = 1
+                connected = 1
+                rightup = True
+                leftdown = True
+                while counter < 4:
+                    if rightup and row-counter >= 0 and col+counter <C and board[row-counter][col+counter] == piece:
+                        connected+=1
+                    else:
+                        rightup = False
+                    if leftdown and row+counter < R and col-counter >=0 and board[row+counter][col-counter] == piece:
+                        connected+=1
+                    else:
+                        leftdown = False
+                    counter+=1
+                eval-=calcEvalAdd(connected)
+    return eval
+                
+                
                 
 
 
@@ -128,6 +274,10 @@ def hardcode(board):
 
 
 def minimax(tboard, depth, player, evaluationFunction, moves):
+    #print(player)
+    tboard = copy.deepcopy(tboard)
+    #print('start of minimax')
+    #printBoard(tboard)
     #print('depth ',depth)
     overallgameOver = False
     #printBoard(board)
@@ -151,9 +301,13 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
         children = getChildren(tboard, player)
         
         for child in children:
+            #print('child')
+            #printBoard(child[0])
             if child[2] == True:
-                return tboard, 10000000, child[1], child[2]
+                return child[0], 10000000, child[1], child[2]
             newBoard, eval, moves, gameOver = minimax(child[0], depth - 1, 'O', evaluationFunction, moves)
+            #print('childBoard')
+            #printBoard(newBoard)
             # maxEval = max(maxEval, eval)
             if gameOver:
                 maxEval = eval
@@ -172,8 +326,10 @@ def minimax(tboard, depth, player, evaluationFunction, moves):
         children = getChildren(board, player)
         
         for child in children:
+            #print('child')
+            #printBoard(child[0])
             if child[2] == True:
-                return tboard, -10000000, child[1], child[2]
+                return child[0], -10000000, child[1], child[2]
             newBoard, eval, moves, gameOver = minimax(child[0], depth - 1, 'X', evaluationFunction, moves)
             # minEval = min(minEval, eval)
             if gameOver:
@@ -239,15 +395,16 @@ def compete(ALG1, D1, eval1, ALG2, D2, eval2):
         input()
         if turn % 2 == 0:
             tboard, eval, moves, gameover = ALG1(board, D1, 'X', eval1, -1)
+            
             print('-----------')
             print('moves', moves)
-            #printBoard(tboard)
+            printBoard(tboard)
             board, temp = dropPiece(board, 'X', moves)
         else:
             tboard, eval, moves, gameover = ALG2(board, D2, 'O', eval2, -1)
             print('-----------')
             print('moves', moves)
-            #printBoard(tboard)
+            printBoard(tboard)
 
             board, temp = dropPiece(board, 'O', moves)
         turn+=1
@@ -279,7 +436,8 @@ def main():
         'AB': alphabeta
     }
     EVALS = {
-        'hc': hardcode
+        'hc': hardcode,
+        'wv': weightedvalue
     }
     ALG1 = ALGS[ALG1]
     ALG2 = ALGS[ALG2]
