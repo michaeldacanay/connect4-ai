@@ -452,7 +452,7 @@ def main():
     ALG2 = ALGS[ALG2]
     eval1 =EVALS[EVAL1]
     eval2 = EVALS[EVAL2]
-
+ 
     # the game is played until a side wins or there is a draw
     print('hello')
     compete(ALG1, D1, eval1, ALG2, D2, eval2)
